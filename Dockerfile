@@ -8,7 +8,8 @@ RUN adduser --home /home/devboy --no-create-home devboy \
 
 # Had to update certificates--git https clone was failing
 RUN apt-get update \
-    && apt-get -y install --no-install-recommends bash zsh unzip curl git ssh openssh-client ca-certificates \
+    && export DEBIAN_FRONTEND=noninteractive \
+    && apt-get -y install --no-install-recommends bash zsh unzip curl git jq htop gnupg ssh openssh-client ca-certificates \
     && update-ca-certificates \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
