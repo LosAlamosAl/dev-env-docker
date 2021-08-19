@@ -1,0 +1,14 @@
+{
+    "name": "Crusty Container",
+    "build": {
+        "dockerfile": "Dockerfile",
+        "args": {
+            "https_proxy": "http://proxyout.lanl.gov:8080",
+            "http_proxy":  "http://proxyout.lanl.gov:8080"
+        },
+    },
+    "settings": {
+        "terminal.integrated.shell.linux": "/bin/zsh"
+    },
+    "remoteUser": "devboy"
+}
