@@ -7,6 +7,9 @@
             "http_proxy":  "http://proxyout.lanl.gov:8080"
         },
     },
+    "mounts": [
+        "source=${env:HOME}${env:USERPROFILE}/.aws,target=/root/.aws,type=bind"
+    ],
     "settings": {
         "terminal.integrated.shell.linux": "/bin/zsh"
     },
