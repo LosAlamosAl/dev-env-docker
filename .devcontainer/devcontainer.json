@@ -8,7 +8,7 @@
         },
     },
     "mounts": [
-        "source=${env:HOME}${env:USERPROFILE}/.aws,target=/root/.aws,type=bind"
+        "source=${env:HOME}${env:USERPROFILE}/.aws,target=/home/devboy/.aws,type=bind"
     ],
     "settings": {
         "terminal.integrated.shell.linux": "/bin/zsh"
