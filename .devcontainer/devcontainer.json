@@ -1,15 +1,8 @@
 {
     "name": "Crusty Container",
     "build": {
-        "dockerfile": "Dockerfile",
-        "args": {
-            "https_proxy": "http://proxyout.lanl.gov:8080",
-            "http_proxy":  "http://proxyout.lanl.gov:8080"
-        },
+        "dockerfile": "Dockerfile"
     },
-    "mounts": [
-        "source=${env:HOME}${env:USERPROFILE}/.aws,target=/home/devboy/.aws,type=bind"
-    ],
     "settings": {
         "terminal.integrated.shell.linux": "/bin/zsh"
     },
