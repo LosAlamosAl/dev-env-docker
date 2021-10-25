@@ -33,7 +33,4 @@ ENV TERM xterm
 ENV SHELL /bin/zsh
 
 # All clones into the container must be public, so HTTPS is best
-RUN git clone https://gist.github.com/a662f0204a310631750906edd4bd2146.git zshrc \
-    && mv ./zshrc/.zshrc . \
-    && rm -rf zshrc
 RUN git clone https://github.com/losalamosal/cy-max.git
