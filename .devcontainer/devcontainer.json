@@ -4,6 +4,9 @@
         "dockerfile": "Dockerfile"
     },
     "settings": {
+        "dotfiles.repository": "your-github-id/your-dotfiles-repo",
+        "dotfiles.targetPath": "~/dotfiles",
+        "dotfiles.installCommand": "~/dotfiles/install.sh",
         "terminal.integrated.shell.linux": "/bin/zsh"
     },
     "remoteUser": "devboy"
