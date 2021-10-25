@@ -28,6 +28,7 @@ WORKDIR /home/devboy
 RUN zsh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)" || true
 RUN git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k
 # RUN curl -fsSLO https://raw.githubusercontent.com/romkatv/dotfiles-public/master/.purepower
+# Oh My ZSH installs a .zshrc. Remove so we can overwrite.
 
 ENV TERM xterm
 ENV SHELL /bin/zsh
