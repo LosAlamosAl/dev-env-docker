@@ -23,6 +23,8 @@ RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-aarch64-2.0.30.zip" -o a
     && ./aws/install \
     && rm -rf aws awscliv2.zip
 
+RUN npm install -g aws-cdk@next
+
 USER devboy
 WORKDIR /home/devboy
 RUN zsh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)" || true
