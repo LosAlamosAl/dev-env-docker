@@ -9,5 +9,8 @@
         "dotfiles.installCommand": "~/dotfiles/install.sh",
         "terminal.integrated.shell.linux": "/bin/zsh"
     },
+    "mounts": [
+        "source=${env:HOME}${env:USERPROFILE}/.aws,target=/home/devboy/.aws,type=bind"
+    ],
     "remoteUser": "devboy"
 }
