@@ -1,6 +1,6 @@
 FROM debian:buster-slim
 
-RUN adduser --home /home/devboy --no-create-home devboy \
+RUN adduser --home /home/devboy --shell /usr/bin/zsh --no-create-home devboy \
     && usermod -aG sudo devboy \
     && mkdir /home/devboy \
     && chown devboy /home/devboy \
