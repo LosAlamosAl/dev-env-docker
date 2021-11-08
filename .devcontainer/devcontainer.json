@@ -1,5 +1,5 @@
 {
-    "name": "Crusty Container",
+    "name": "AWS Development",
     "build": {
         "dockerfile": "Dockerfile"
     },
