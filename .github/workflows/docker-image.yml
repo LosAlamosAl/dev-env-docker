@@ -1,3 +1,7 @@
+# This workflow succeeds but awscli is not installed. I don't know why the
+# workflow would succeed if an install fails. Preliminary search points to
+# trouble running buildx for M1 Macs. Will need to check this out.
+
 name: Create and publish a Docker image
 
 on:

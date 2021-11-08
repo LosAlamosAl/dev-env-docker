@@ -1,6 +1,6 @@
 {
     "name": "AWS Development",
-    "image": "ghcr.io/losalamosal/dev-env-docker:main",
+    "dockerFile": "Dockerfile",
     "settings": {
         "dotfiles.repository": "https://github.com/losalamosal/dotfiles",
         "dotfiles.targetPath": "~/dotfiles",
