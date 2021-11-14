@@ -45,7 +45,7 @@ The stage name, `seejay` in this case, is appended to the API's URL.
 Finally, test using cURL:
 ```sh
 curl -i -H "Accept: application/json" -H "Content-Type: application/json" \
-   -X GET  https://RESTAPI_ID.execute-api.us-west-1.amazonaws.com/STAGE_NAME
+   -X GET  https://RESTAPI_ID.execute-api.us-west-1.amazonaws.com/RESOURCE_PATH
 HTTP/2 200 
 date: Wed, 10 Nov 2021 02:24:25 GMT
 content-type: application/json
@@ -54,4 +54,31 @@ x-amzn-requestid: ad0fbd3f-02f0-4f3e-8ddf-fd66be78eb68
 x-amz-apigw-id: IkQGBF0myK4FXzQ=
 
 {"message": "blow chunks"}
+```
+
+### Create an HTTP API to HTTP endpoint
+
+First, create the API. Specifying a `target` at this point will define a `$default` (catch all) route that will hit the specified endpoint. A `$default` stage and (auto) deployment are also created. If you don't specify a `target` you'll need to add stage and deply with additional commands.
+```sh
+aws apigatewayv2 create-api --name hole --protocol-type HTTP --target http://httpbin.org/anything
+```
+
+Now we define the integrations. These are done first so that we can attach them to the routes as we create them. Don't know why it's a `HTTP_PROXY` when there is an `HTTP` available (but that fails). Also don't know why the requirement for payload format (2.0 fails).
+```sh
+aws apigatewayv2 create-integration --api-id HTTP_API_ID --integration-type HTTP_PROXY \
+   --integration-method GET --payload-format-version 1.0 --integration-uri http://httpbin.org/get
+aws apigatewayv2 create-integration --api-id HTTP_API_ID --integration-type HTTP_PROXY \
+   --integration-method POST --payload-format-version 1.0 --integration-uri http://httpbin.org/post
+```
+
+Now we can crteate the routes with their matching integrations.
+```sh
+aws apigatewayv2 create-route --api-id HTTP_API_ID --route-key 'GET /get' --target integrations/GET_INTEGRATION_ID
+aws apigatewayv2 create-route --api-id HTTP_API_ID --route-key 'POST /post' --target integrations/POST_INTEGRATION_ID
+```
+
+Test with cURL:
+```sh
+curl -i -H "Accept: application/json" -H "Content-Type: application/json" \
+   -X GET https://HTTP_API_ID.execute-api.us-west-1.amazonaws.com/RESOURCE_PATH
 ```
