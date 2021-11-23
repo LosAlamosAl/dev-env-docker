@@ -87,12 +87,12 @@ curl -i -H "Accept: application/json" -H "Content-Type: application/json" \
 
 Quoting the JSON format is a mother. This works, but adding another K:V pair screws it up.
 ```sh
-aws apigatewayv2 update-stage --api-id novyodwbr8 --stage-name '$default' --access-log-settings DestinationArn='arn:aws:logs:us-west-1:179645850923:log-group:hole-http-api',Format=\'{\"requestId\":\"\$context.requestId\"}\'
+aws apigatewayv2 update-stage --api-id novyodwbr8 --stage-name '$default' --access-log-settings DestinationArn='arn:aws:logs:us-west-1:ACCOUNT_ID:log-group:hole-http-api',Format=\'{\"requestId\":\"\$context.requestId\"}\'
 ```
 
 After much screwing around, this works. Note the quoting required:
 ```sh
-aws apigatewayv2 update-stage --api-id novyodwbr8 --stage-name '$default' --access-log-settings '{"DestinationArn": "arn:aws:logs:us-west-1:179645850923:log-group:hole-http-api", "Format": "{ \"requestId\":\"$context.requestId\", \"ip\": \"$context.identity.sourceIp\", \"requestTime\":\"$context.requestTime\", \"httpMethod\":\"$context.httpMethod\",\"routeKey\":\"$context.routeKey\", \"status\":\"$context.status\",\"protocol\":\"$context.protocol\", \"responseLength\":\"$context.responseLength\" }"}'
+aws apigatewayv2 update-stage --api-id novyodwbr8 --stage-name '$default' --access-log-settings '{"DestinationArn": "arn:aws:logs:us-west-1:ACCOUNT_ID:log-group:hole-http-api", "Format": "{ \"requestId\":\"$context.requestId\", \"ip\": \"$context.identity.sourceIp\", \"requestTime\":\"$context.requestTime\", \"httpMethod\":\"$context.httpMethod\",\"routeKey\":\"$context.routeKey\", \"status\":\"$context.status\",\"protocol\":\"$context.protocol\", \"responseLength\":\"$context.responseLength\" }"}'
 ```
 
 ### Creating the routes
