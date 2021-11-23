@@ -82,3 +82,30 @@ Test with cURL:
 curl -i -H "Accept: application/json" -H "Content-Type: application/json" \
    -X GET https://HTTP_API_ID.execute-api.us-west-1.amazonaws.com/RESOURCE_PATH
 ```
+
+#### Adding a log
+
+Quoting the JSON format is a mother. This works, but adding another K:V pair screws it up.
+```sh
+aws apigatewayv2 update-stage --api-id novyodwbr8 --stage-name '$default' --access-log-settings DestinationArn='arn:aws:logs:us-west-1:179645850923:log-group:hole-http-api',Format=\'{\"requestId\":\"\$context.requestId\"}\'
+```
+
+After much screwing around, this works. Note the quoting required:
+```sh
+aws apigatewayv2 update-stage --api-id novyodwbr8 --stage-name '$default' --access-log-settings '{"DestinationArn": "arn:aws:logs:us-west-1:179645850923:log-group:hole-http-api", "Format": "{ \"requestId\":\"$context.requestId\", \"ip\": \"$context.identity.sourceIp\", \"requestTime\":\"$context.requestTime\", \"httpMethod\":\"$context.httpMethod\",\"routeKey\":\"$context.routeKey\", \"status\":\"$context.status\",\"protocol\":\"$context.protocol\", \"responseLength\":\"$context.responseLength\" }"}'
+```
+
+### Creating the routes
+
+Here are some routes:
+
+- /l1
+- /l1/l2
+- /l1/l2/l3
+- /zip{code}            -->   api.zippopotam.us/us/{code}            US only
+- /zip/{state}/{city}   -->  api.zippopotam.us/us/{state}/{city}     US only
+
+Query strings? Body? Forms?
+
+Only solves half the problem. REST APIs can extract data from response. Maybe HTTP APIs will follow suit at some point.
+
