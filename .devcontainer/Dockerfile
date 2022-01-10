@@ -9,7 +9,24 @@ RUN adduser --home /home/devboy --shell /usr/bin/zsh --no-create-home devboy \
 # Had to update certificates--git https clone was failing
 RUN apt-get update \
     && export DEBIAN_FRONTEND=noninteractive \
-    && apt-get -y install --no-install-recommends bash zsh zip unzip less httpie curl git jq htop gnupg2 ssh openssh-client ca-certificates \
+    && apt-get -y install --no-install-recommends \
+        bash                                      \
+        zsh                                       \
+        zip                                       \
+        unzip                                     \
+        less                                      \
+        httpie                                    \
+        curl                                      \
+        git                                       \
+        jq                                        \
+        htop                                      \
+        gnupg2                                    \
+        ssh                                       \
+        groff                                     \
+#        python3                                   \
+#        python3-pip                               \
+#        python3-setuptools                        \
+        openssh-client ca-certificates \
     && update-ca-certificates \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*

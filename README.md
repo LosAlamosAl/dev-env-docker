@@ -109,3 +109,8 @@ Query strings? Body? Forms?
 
 Only solves half the problem. REST APIs can extract data from response. Maybe HTTP APIs will follow suit at some point.
 
+
+```sh
+fc -IA  # save Zsh history NOW
+fc -R   # read Zsh history into new shell
+```
