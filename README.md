@@ -85,6 +85,25 @@ curl -i -H "Accept: application/json" -H "Content-Type: application/json" \
 
 #### Adding a log
 
+First, create the log group (note that you must have appropriate priveleges; my used is group `developer` has them by default):
+```sh
+aws logs create-log-group --log-group-name crusty-api-log
+aws logs describe-log-groups --log-group-name crusty-api-log
+{
+    "logGroups": [
+        {
+            "logGroupName": "crusty-api-log",
+            "creationTime": 1641949720910,
+            "metricFilterCount": 0,
+            "arn": "arn:aws:logs:us-west-1:xxxxxxxxxxx:log-group:crusty-api-log:*",
+            "storedBytes": 0
+        }
+    ]
+}
+```
+
+Next, attach the log group to a stage of the API.
+
 Quoting the JSON format is a mother. This works, but adding another K:V pair screws it up.
 ```sh
 aws apigatewayv2 update-stage --api-id novyodwbr8 --stage-name '$default' --access-log-settings DestinationArn='arn:aws:logs:us-west-1:ACCOUNT_ID:log-group:hole-http-api',Format=\'{\"requestId\":\"\$context.requestId\"}\'
@@ -93,6 +112,12 @@ aws apigatewayv2 update-stage --api-id novyodwbr8 --stage-name '$default' --acce
 After much screwing around, this works. Note the quoting required:
 ```sh
 aws apigatewayv2 update-stage --api-id novyodwbr8 --stage-name '$default' --access-log-settings '{"DestinationArn": "arn:aws:logs:us-west-1:ACCOUNT_ID:log-group:hole-http-api", "Format": "{ \"requestId\":\"$context.requestId\", \"ip\": \"$context.identity.sourceIp\", \"requestTime\":\"$context.requestTime\", \"httpMethod\":\"$context.httpMethod\",\"routeKey\":\"$context.routeKey\", \"status\":\"$context.status\",\"protocol\":\"$context.protocol\", \"responseLength\":\"$context.responseLength\" }"}'
+```
+
+You can view the log:
+```sh
+aws logs tail crusty-api-log
+2022-01-12T01:18:16.705000+00:00 xxxxxxxxx_.default-2022-01-12-01-18 {"requestId":"yyyyyyyyyyyyyy"}
 ```
 
 ### Creating the routes
