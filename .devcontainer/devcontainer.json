@@ -1,5 +1,5 @@
 {
-    "name": "AWS Development",
+    "name": "AWS Development (aws-dev)",
     "dockerFile": "Dockerfile",
     "settings": {
         "dotfiles.repository": "https://github.com/losalamosal/dotfiles",
@@ -8,7 +8,8 @@
         "terminal.integrated.defaultProfile.linux": "zsh"
     },
     "mounts": [
-        "source=${env:HOME}${env:USERPROFILE}/.aws,target=/home/devboy/.aws,type=bind"
+        "source=${env:HOME}${env:USERPROFILE}/.aws,target=/home/devboy/.aws,type=bind",
+        "source=${env:HOME}${env:USERPROFILE}/.vscode-zsh-hists/aws-dev.zsh_history,target=/home/devboy/.zsh_history,type=bind"
     ],
     "remoteUser": "devboy"
 }
