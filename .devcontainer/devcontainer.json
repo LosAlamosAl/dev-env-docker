@@ -7,6 +7,9 @@
         "dotfiles.installCommand": "~/dotfiles/install.sh",
         "terminal.integrated.defaultProfile.linux": "zsh"
     },
+    "extensions": [
+        "dsteenman.cloudformation-yaml-snippets",
+        "kddejong.vscode-cfn-lint"],
     "mounts": [
         "source=${env:HOME}${env:USERPROFILE}/.aws,target=/home/devboy/.aws,type=bind",
         "source=${env:HOME}${env:USERPROFILE}/.vscode-zsh-hists/aws-dev.zsh_history,target=/home/devboy/.zsh_history,type=bind"

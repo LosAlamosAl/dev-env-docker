@@ -116,8 +116,63 @@ aws apigatewayv2 update-stage --api-id novyodwbr8 --stage-name '$default' --acce
 
 You can view the log:
 ```sh
-aws logs tail crusty-api-log
+aws logs tail --since 2h crusty-api-log
 2022-01-12T01:18:16.705000+00:00 xxxxxxxxx_.default-2022-01-12-01-18 {"requestId":"yyyyyyyyyyyyyy"}
+```
+
+### Monitoring
+
+I have tried to look at the default metrics that are supposed to be captured for every API call. They don't show up in the default CloudWatch dashboard. I cab add them if I specifically select APIs, but they should show up automatically. Likewise, the following style of CLI request should work, but returns empty.
+```sh
+aws cloudwatch get-metric-statistics --namespace AWS/ApiGateway --metric-name Count --start-time 2021-01-12T23:00:00Z --end-time 2021-01-16T23:00:00Z --period 300 --statistics Sum
+{
+    "Label": "Count",
+    "Datapoints": []
+}
+```
+However, searching for log events **does** work:
+```sh
+aws cloudwatch get-metric-statistics --namespace AWS/Logs --metric-name IncomingLogEvents --start-time 2021-01-12T23:00:00Z --end-time 2021-01-16T23:00:00Z --period 3600 --statistics Sum
+{
+    "Label": "IncomingLogEvents",
+    "Datapoints": [
+        {
+            "Timestamp": "2021-01-14T00:00:00+00:00",
+            "Sum": 13.0,
+            "Unit": "None"
+        },
+        {
+            "Timestamp": "2021-01-14T02:00:00+00:00",
+            "Sum": 53.0,
+            "Unit": "None"
+        },
+        {
+            "Timestamp": "2021-01-14T23:00:00+00:00",
+            "Sum": 45.0,
+            "Unit": "None"
+        },
+        {
+            "Timestamp": "2021-01-14T21:00:00+00:00",
+            "Sum": 28.0,
+            "Unit": "None"
+        },
+        {
+            "Timestamp": "2021-01-14T22:00:00+00:00",
+            "Sum": 33.0,
+            "Unit": "None"
+        },
+        {
+            "Timestamp": "2021-01-14T01:00:00+00:00",
+            "Sum": 8.0,
+            "Unit": "None"
+        },
+        {
+            "Timestamp": "2021-01-14T03:00:00+00:00",
+            "Sum": 12.0,
+            "Unit": "None"
+        }
+    ]
+}
 ```
 
 ### Creating the routes

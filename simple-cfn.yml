@@ -1,0 +1,33 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Al's Sample Template
+
+Resources:
+
+  JankerApiV2:
+    Type: AWS::ApiGatewayV2::Api
+    Properties: 
+      Name: janker
+      ProtocolType: HTTP
+
+  JankerGetRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      RouteKey: GET /
+      ApiId: !Ref JankerApiV2
+      Target: !Sub "integrations/${JankerGetIntegration}"
+
+  JankerGetIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref JankerApiV2
+      IntegrationType: HTTP_PROXY
+      IntegrationMethod: GET
+      IntegrationUri: http://httpbin.org/anything
+      PayloadFormatVersion: 1.0
+
+  JankerStage:
+    Type: AWS::ApiGatewayV2::Stage
+    Properties:
+      StageName: $default
+      ApiId: !Ref JankerApiV2
+      AutoDeploy: true

@@ -23,9 +23,9 @@ RUN apt-get update \
         gnupg2                                    \
         ssh                                       \
         groff                                     \
-#        python3                                   \
-#        python3-pip                               \
-#        python3-setuptools                        \
+        python3                                   \
+        python3-pip                               \
+        python3-setuptools                        \
         openssh-client ca-certificates \
     && update-ca-certificates \
     && apt-get clean \
@@ -41,6 +41,8 @@ RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-aarch64-2.0.30.zip" -o a
     && rm -rf aws awscliv2.zip
 
 RUN npm install -g aws-cdk@next
+
+RUN pip3 install cfn-lint
 
 USER devboy
 WORKDIR /home/devboy
