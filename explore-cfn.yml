@@ -1,0 +1,66 @@
+# Helpful head start from https://github.com/SanderKnape/cognito-apigateway-jwt
+#
+# aws cloudformation create-stack --stack-name explore --template-body file://explore-cfn.yml
+# aws cloudformation update-stack --stack-name explore --template-body file://explore-cfn.yml
+# aws cloudformation delete-stack --stack-name explore
+AWSTemplateFormatVersion: 2010-09-09
+Description: Exploring AWS HTTP API Gateway
+
+Resources:
+
+  ExploreLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties: 
+      LogGroupName: explore-log
+      RetentionInDays: 3
+
+  ExploreApiV2:
+    Type: AWS::ApiGatewayV2::Api
+    Properties: 
+      Name: explore
+      ProtocolType: HTTP
+
+  ExploreGetRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      RouteKey: GET /{stinky}/mofo/{greed+}
+      ApiId: !Ref ExploreApiV2
+      # Can't find this integrations/ thing in any doc, but stack create
+      # fails with an error that says it's required.
+      Target: !Sub "integrations/${ExploreGetIntegration}"
+
+  ExploreGetIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref ExploreApiV2
+      IntegrationType: HTTP_PROXY
+      IntegrationMethod: GET
+      IntegrationUri: http://httpbin.org/anything
+      RequestParameters:
+        # Remove mappings using:
+        # "remove:querystring.key1":"",    note no single quotes within double quotes
+        # "remove:querystring.key2":"",
+        {"remove:querystring.key1":"''", 
+         "remove:querystring.key2":"''",
+         "overwrite:path":"anything/$request.path"}
+      PayloadFormatVersion: 1.0
+
+  # aws logs tail explore-log
+  ExploreStage:
+    Type: AWS::ApiGatewayV2::Stage
+    Properties:
+      StageName: $default
+      ApiId: !Ref ExploreApiV2
+      AutoDeploy: true
+      AccessLogSettings:
+        DestinationArn: !GetAtt ExploreLogGroup.Arn
+        Format: 'requestId: $context.requestId
+          integrationLatency: $context.integrationLatency
+          responseLatency: $context.responseLatency
+          httpMethod: $context.httpMethod
+          routeKey: $context.routeKey
+          path: $context.path'
+
+Outputs:
+  ExploreApiV2Url:
+    Value: !Sub "https://${ExploreApiV2}.execute-api.${AWS::Region}.${AWS::URLSuffix}/"
