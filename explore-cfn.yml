@@ -3,8 +3,22 @@
 # aws cloudformation create-stack --stack-name explore --template-body file://explore-cfn.yml
 # aws cloudformation update-stack --stack-name explore --template-body file://explore-cfn.yml
 # aws cloudformation delete-stack --stack-name explore
+# aws cloudformation describe-stacks --stack-name explore --query "Stacks[].Outputs[].OutputValue"
+# aws cloudformation describe-stack-events --stack-name explore
+# aws cloudformation list-stacks --stack-status-filter CREATE_COMPLETE
+# aws cloudformation list-stack-resources --stack-name explore --query "StackResourceSummaries[].LogicalResourceId"
+# aws cloudformation list-stack-resources --stack-name explore --query 'StackResourceSummaries[].[LogicalResourceId, PhysicalResourceId,ResourceType]' --output table
+# must use --capabilities CAPABILITY_NAMED_IAM when creating a role
+# aws cloudformation create-stack --stack-name explore --template-body file://explore-cfn.yml --capabilities CAPABILITY_NAMED_IAM
 AWSTemplateFormatVersion: 2010-09-09
 Description: Exploring AWS HTTP API Gateway
+
+Parameters:
+
+  LambdaFunctionName:
+    Type: String
+    AllowedPattern: ^[a-zA-Z0-9]+[a-zA-Z0-9-]+[a-zA-Z0-9]+$
+    Default: explore-lambda
 
 Resources:
 
@@ -14,22 +28,65 @@ Resources:
       LogGroupName: explore-log
       RetentionInDays: 3
 
+  ExploreLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Ref LambdaFunctionName
+      Role: !GetAtt ExploreLambdaRole.Arn
+      Runtime: nodejs14.x
+      Handler: index.handler
+      Code:
+        ZipFile: |
+          exports.handler = async (event) => {     
+            console.log("Bro!");
+            const response = {
+              statusCode: 200,
+              body: JSON.stringify('Hello from Lambda!'),
+            };
+            return response;
+          }; 
+      MemorySize: 128
+      Timeout: 30
+  
+  ExploreLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+      ManagedPolicyArns: 
+       - 'arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'
+
+  # After a million searches, finally found this:
+  #   https://serverlessland.com/patterns/apigw-lambda
+  ExploreLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref ExploreLambda
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ExploreApiV2}/*'
+
   ExploreApiV2:
     Type: AWS::ApiGatewayV2::Api
     Properties: 
       Name: explore
       ProtocolType: HTTP
 
-  ExploreGetRoute:
+  ExploreUrlRoute:
     Type: AWS::ApiGatewayV2::Route
     Properties:
-      RouteKey: GET /{stinky}/mofo/{greed+}
+      RouteKey: GET /url/{greed+}
       ApiId: !Ref ExploreApiV2
       # Can't find this integrations/ thing in any doc, but stack create
       # fails with an error that says it's required.
-      Target: !Sub "integrations/${ExploreGetIntegration}"
+      Target: !Sub "integrations/${ExploreUrlIntegration}"
 
-  ExploreGetIntegration:
+  ExploreUrlIntegration:
     Type: AWS::ApiGatewayV2::Integration
     Properties:
       ApiId: !Ref ExploreApiV2
@@ -45,8 +102,29 @@ Resources:
          "overwrite:path":"anything/$request.path"}
       PayloadFormatVersion: 1.0
 
+  ExploreLambdaRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      RouteKey: GET /lambda/{greed+}
+      ApiId: !Ref ExploreApiV2
+      # Can't find this integrations/ thing in any doc, but stack create
+      # fails with an error that says it's required.
+      Target: !Sub "integrations/${ExploreLambdaIntegration}"
+
+  ExploreLambdaIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref ExploreApiV2
+      IntegrationType: AWS_PROXY
+      IntegrationMethod: GET
+      IntegrationUri: !GetAtt ExploreLambda.Arn
+      PayloadFormatVersion: 2.0
+
   # aws logs tail explore-log
   ExploreStage:
+    Metadata:
+      Comment: |
+        This is some arbitrary text.
     Type: AWS::ApiGatewayV2::Stage
     Properties:
       StageName: $default
@@ -57,6 +135,7 @@ Resources:
         Format: 'requestId: $context.requestId
           integrationLatency: $context.integrationLatency
           responseLatency: $context.responseLatency
+          integrationErrorMessage: $context.integrationErrorMessage
           httpMethod: $context.httpMethod
           routeKey: $context.routeKey
           path: $context.path'
