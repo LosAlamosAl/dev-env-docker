@@ -28,6 +28,13 @@ Resources:
       LogGroupName: explore-log
       RetentionInDays: 3
 
+  # Thanks https://ldoughty.com/2020/01/aws-http-api-gateway-cloudformation-setup/
+  LambdaLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties: 
+      LogGroupName: !Join [/,["/aws/lambda", !Ref ExploreLambda ]]
+      RetentionInDays: 3
+
   ExploreLambda:
     Type: AWS::Lambda::Function
     Properties:
@@ -37,14 +44,16 @@ Resources:
       Handler: index.handler
       Code:
         ZipFile: |
-          exports.handler = async (event) => {     
-            console.log("Bro!");
+          exports.handler = async (event, context) => {     
+            console.log("ENVIRONMENT VARIABLES\n" + JSON.stringify(process.env, null, 2))
+            console.info("EVENT\n" + JSON.stringify(event, null, 2))
+            console.warn("Event not processed")
             const response = {
               statusCode: 200,
-              body: JSON.stringify('Hello from Lambda!'),
-            };
-            return response;
-          }; 
+              body: JSON.stringify('Lambda successfully called')
+            }
+            return response
+          }
       MemorySize: 128
       Timeout: 30
   
@@ -76,6 +85,11 @@ Resources:
     Properties: 
       Name: explore
       ProtocolType: HTTP
+      # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-apigatewayv2-api-cors.html
+      CorsConfiguration:
+        AllowMethods: [OPTIONS,GET,POST,PUT,DELETE]
+        AllowHeaders: [Content-Type,X-Amz-Date,Authorization,X-Api-Key,Access-Control-Allow-Origin]
+        AllowOrigins: ["*"]
 
   ExploreUrlRoute:
     Type: AWS::ApiGatewayV2::Route
