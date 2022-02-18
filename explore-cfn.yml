@@ -19,6 +19,10 @@ Parameters:
     Type: String
     AllowedPattern: ^[a-zA-Z0-9]+[a-zA-Z0-9-]+[a-zA-Z0-9]+$
     Default: explore-lambda
+  ApiStageName:
+    Type: String
+    AllowedPattern: ^[a-zA-Z0-9]+[a-zA-Z0-9-]+[a-zA-Z0-9]+$
+    Default: dev
 
 Resources:
 
@@ -87,7 +91,7 @@ Resources:
       ProtocolType: HTTP
       # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-apigatewayv2-api-cors.html
       CorsConfiguration:
-        AllowMethods: [OPTIONS,GET,POST,PUT,DELETE]
+        AllowMethods: [GET]
         AllowHeaders: [Content-Type,X-Amz-Date,Authorization,X-Api-Key,Access-Control-Allow-Origin]
         AllowOrigins: ["*"]
 
@@ -123,6 +127,7 @@ Resources:
       ApiId: !Ref ExploreApiV2
       # Can't find this integrations/ thing in any doc, but stack create
       # fails with an error that says it's required.
+      # Could probably use a JOIN as in LambdaLogGroup above
       Target: !Sub "integrations/${ExploreLambdaIntegration}"
 
   ExploreLambdaIntegration:
@@ -134,6 +139,28 @@ Resources:
       IntegrationUri: !GetAtt ExploreLambda.Arn
       PayloadFormatVersion: 2.0
 
+  # https://stackoverflow.com/a/70955124/227441
+  # https://ldoughty.com/2020/01/aws-http-api-gateway-cloudformation-setup/
+  # https://dev.to/lubanasachin/cloudformation-http-api-gateway-with-dns-4kg5
+  # Must use HTTPS to connect (even without a custom domain)
+  # Have to change the DNS CNAME record (at Namecheap) for every new target URL
+  # Too bad there is not some level of indirection that would make that unnecessary.
+  ExploreDomainName:
+    Type: 'AWS::ApiGatewayV2::DomainName'
+    Properties:
+      DomainName: aws.9al.run
+      DomainNameConfigurations:
+        - EndpointType: REGIONAL
+          CertificateArn: arn:aws:acm:us-west-1:179645850923:certificate/f550ac4e-677e-42b3-8bdd-40c3cc3ff8d0
+
+  ExploreApiMapping:
+    Type: AWS::ApiGatewayV2::ApiMapping
+    Properties:
+      DomainName: aws.9al.run
+      ApiMappingKey: crust
+      ApiId: !Ref ExploreApiV2
+      Stage: !Ref ExploreStage
+
   # aws logs tail explore-log
   ExploreStage:
     Metadata:
@@ -141,7 +168,7 @@ Resources:
         This is some arbitrary text.
     Type: AWS::ApiGatewayV2::Stage
     Properties:
-      StageName: $default
+      StageName: !Ref ApiStageName
       ApiId: !Ref ExploreApiV2
       AutoDeploy: true
       AccessLogSettings:
@@ -156,4 +183,4 @@ Resources:
 
 Outputs:
   ExploreApiV2Url:
-    Value: !Sub "https://${ExploreApiV2}.execute-api.${AWS::Region}.${AWS::URLSuffix}/"
+    Value: !Sub "https://${ExploreApiV2}.execute-api.${AWS::Region}.${AWS::URLSuffix}/${ApiStageName}"
