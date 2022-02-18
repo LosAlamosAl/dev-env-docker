@@ -10,6 +10,7 @@
 # aws cloudformation list-stack-resources --stack-name explore --query 'StackResourceSummaries[].[LogicalResourceId, PhysicalResourceId,ResourceType]' --output table
 # must use --capabilities CAPABILITY_NAMED_IAM when creating a role
 # aws cloudformation create-stack --stack-name explore --template-body file://explore-cfn.yml --capabilities CAPABILITY_NAMED_IAM
+# curl -k -i (if you get curl: (60) SSL: no alternative certificate...)
 AWSTemplateFormatVersion: 2010-09-09
 Description: Exploring AWS HTTP API Gateway
 
@@ -145,6 +146,7 @@ Resources:
   # Must use HTTPS to connect (even without a custom domain)
   # Have to change the DNS CNAME record (at Namecheap) for every new target URL
   # Too bad there is not some level of indirection that would make that unnecessary.
+  # Request a certificate with the CLI.
   ExploreDomainName:
     Type: 'AWS::ApiGatewayV2::DomainName'
     Properties:
@@ -157,7 +159,7 @@ Resources:
     Type: AWS::ApiGatewayV2::ApiMapping
     Properties:
       DomainName: aws.9al.run
-      ApiMappingKey: crust
+      ApiMappingKey: explore-api
       ApiId: !Ref ExploreApiV2
       Stage: !Ref ExploreStage
 
@@ -171,6 +173,13 @@ Resources:
       StageName: !Ref ApiStageName
       ApiId: !Ref ExploreApiV2
       AutoDeploy: true
+      # All routes default
+      DefaultRouteSettings:
+        ThrottlingBurstLimit: 5
+        ThrottlingRateLimit: 10
+      # Per-route overrides
+      RouteSettings:
+        {"GET /url/{greed+}":{"ThrottlingBurstLimit":10,"ThrottlingRateLimit":20}}
       AccessLogSettings:
         DestinationArn: !GetAtt ExploreLogGroup.Arn
         Format: 'requestId: $context.requestId
