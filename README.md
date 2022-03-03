@@ -194,3 +194,6 @@ Only solves half the problem. REST APIs can extract data from response. Maybe HT
 fc -IA  # save Zsh history NOW
 fc -R   # read Zsh history into new shell
 ```
+
+Testing Permalink.
+https://github.com/LosAlamosAl/dev-env-docker/blob/f4b2383fbf27d6eba8d03744b0cff8a99ca20c50/explore-cfn.yml#L125-L131
