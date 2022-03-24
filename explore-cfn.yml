@@ -123,7 +123,7 @@ Resources:
       IntegrationMethod: GET
       IntegrationUri: http://httpbin.org/anything
       RequestParameters:
-        # Remove mappings using:  (note no single quotes within double quotes)
+        # Delete mappings using:  (note no single quotes within double quotes)
         # "remove:querystring.key1": ""  
         # "remove:querystring.key2": ""
         "remove:querystring.key1": "''"
@@ -141,7 +141,7 @@ Resources:
           "ResponseParameters":
             - Destination: "overwrite:statuscode"
               # Remove previously added parameter
-              Source: ""
+              Source: "404"
       PayloadFormatVersion: 1.0
 
   ExploreLambdaRoute:
@@ -168,7 +168,7 @@ Resources:
             - Destination: "overwrite:statuscode"
               # Source: "201"
               # Use empty string to REMOVE a previpusly added ResponseParameter
-              Source: ""
+              Source: "404"
       PayloadFormatVersion: 2.0
 
   # https://stackoverflow.com/a/70955124/227441
@@ -202,17 +202,34 @@ Resources:
       Comment: |
         This is some arbitrary text.
     Type: AWS::ApiGatewayV2::Stage
+    # Needed to prevent RouteSettings "bug" below.
+    # Thanks to Gojko Adzic on AWS Developers Slack channel.
+    DependsOn:
+      - ExploreUrlRoute
     Properties:
       StageName: !Ref ApiStageName
       ApiId: !Ref ExploreApiV2
+      # Auto-deploy probably make sense most of the time--a new deployment is
+      # needed to see any API change. If you want to delay access to the API update
+      # you could set AutoDeploy: false and create the deployment using the AWW CLI
+      # when you're ready (aws apigatewayv2 create-deployment).
       AutoDeploy: true
       # All routes default
       DefaultRouteSettings:
         ThrottlingBurstLimit: 5
         ThrottlingRateLimit: 10
       # Per-route overrides
+      # This fails on clean create (not update). If stack is created with RouteSettings
+      # commented out it will create. Subsequent update with RouteSettings uncommented
+      # succeds.
+      # Not a bug. See DependsOn above.
       RouteSettings:
         {"GET /url/{greed+}":{"ThrottlingBurstLimit":10,"ThrottlingRateLimit":20}}
+      StageVariables:
+        "subdomain": "aws-explore"
+        # Delete an existing stage variable
+        # subdomain: ""
+        # "a_more_complex_var": ""
       AccessLogSettings:
         DestinationArn: !GetAtt ExploreLogGroup.Arn
         Format: 'requestId: $context.requestId
