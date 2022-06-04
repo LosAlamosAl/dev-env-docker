@@ -42,6 +42,8 @@ RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-aarch64-2.0.30.zip" -o a
 
 RUN npm install -g aws-cdk@next
 
+RUN /bin/sh -c "$(curl -fsSL https://raw.githubusercontent.com/turbot/steampipe/main/install.sh)"
+
 RUN pip3 install cfn-lint
 
 USER devboy
